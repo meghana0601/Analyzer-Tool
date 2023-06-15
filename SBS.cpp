@@ -31,7 +31,11 @@ public:
         }
     }
 
-    void display() {
+    double getBalance() const {
+        return balance;
+    }
+
+    void display() const {
         cout << "Account Number: " << accountNumber << endl;
         cout << "Account Holder Name: " << accountHolderName << endl;
         cout << "Balance: $" << balance << endl;
@@ -43,22 +47,67 @@ private:
     vector<Account> accounts;
 
 public:
-    void addAccount(Account account) {
-        accounts.push_back(account);
-        cout << "Account added successfully." << endl;
+    void createAccount() {
+        string number, name;
+        double initialBalance;
+
+        cout << "Enter account number: ";
+        cin >> number;
+
+        cout << "Enter account holder name: ";
+        cin.ignore();
+        getline(cin, name);
+
+        cout << "Enter initial balance: $";
+        cin >> initialBalance;
+
+        Account newAccount(number, name, initialBalance);
+        accounts.push_back(newAccount);
+
+        cout << "Account created successfully." << endl;
     }
 
-    void removeAccount(string accountNumber) {
-        for (int i = 0; i < accounts.size(); i++) {
-            if (accounts[i].getAccountNumber() == accountNumber) {
-                accounts.erase(accounts.begin() + i);
-                cout << "Account removed successfully." << endl;
-                return;
+    void performTransaction(string accountNumber) {
+        Account* account = findAccount(accountNumber);
+        if (account != nullptr) {
+            int choice;
+            double amount;
+
+            cout << "1. Deposit" << endl;
+            cout << "2. Withdraw" << endl;
+            cout << "Enter your choice: ";
+            cin >> choice;
+
+            switch (choice) {
+                case 1:
+                    cout << "Enter amount to deposit: $";
+                    cin >> amount;
+                    account->deposit(amount);
+                    break;
+                case 2:
+                    cout << "Enter amount to withdraw: $";
+                    cin >> amount;
+                    account->withdraw(amount);
+                    break;
+                default:
+                    cout << "Invalid choice." << endl;
+                    break;
             }
+        } else {
+            cout << "Account not found." << endl;
         }
-        cout << "Account not found." << endl;
     }
 
+    void displayAccount(string accountNumber) const {
+        Account* account = findAccount(accountNumber);
+        if (account != nullptr) {
+            account->display();
+        } else {
+            cout << "Account not found." << endl;
+        }
+    }
+
+private:
     Account* findAccount(string accountNumber) {
         for (int i = 0; i < accounts.size(); i++) {
             if (accounts[i].getAccountNumber() == accountNumber) {
@@ -72,29 +121,42 @@ public:
 int main() {
     Bank bank;
 
-    Account acc1("123456", "John Doe", 1000.0);
-    bank.addAccount(acc1);
+    int choice;
+    string accountNumber;
 
-    Account acc2("789012", "Jane Smith", 500.0);
-    bank.addAccount(acc2);
+    do {
+        cout << "1. Create Account" << endl;
+        cout << "2. Perform Transaction" << endl;
+        cout << "3. Display Account Details" << endl;
+        cout << "4. Exit" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
 
-    Account* acc3 = bank.findAccount("123456");
-    if (acc3 != nullptr) {
-        acc3->deposit(200.0);
-        acc3->withdraw(300.0);
-        acc3->display();
-    } else {
-        cout << "Account not found." << endl;
-    }
+        switch (choice) {
+            case 1:
+                bank.createAccount();
+                break;
+            case 2:
+                cout << "Enter account number: ";
+                cin >> accountNumber;
+                bank.performTransaction(accountNumber);
+                break;
+            case 3:
+                cout << "Enter account number: ";
+                cin >> accountNumber;
+                bank.displayAccount(accountNumber);
+                break;
+            case 4:
+                cout << "Exiting..." << endl;
+                break;
+            default:
+                cout << "Invalid choice." << endl;
+                break;
+        }
 
-    Account* acc4 = bank.findAccount("999999");
-    if (acc4 != nullptr) {
-        acc4->display();
-    } else {
-        cout << "Account not found." << endl;
-    }
+        cout << endl;
 
-    bank.removeAccount("789012");
+    } while (choice != 4);
 
     return 0;
 }
