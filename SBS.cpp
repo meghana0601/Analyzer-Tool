@@ -1,162 +1,244 @@
-#include <iostream>
-#include <vector>
-#include <string>
-
+//Developer: Siddhartha Sarkar
+#include<iostream>
+#include<process.h>
+#include<fstream>
+#include <stdlib.h>
 using namespace std;
 
-class Account {
-private:
-    string accountNumber;
-    string accountHolderName;
-    double balance;
+class head
+{
+	char Iname[50][50];
 
 public:
-    Account(string number, string name, double initialBalance) {
-        accountNumber = number;
-        accountHolderName = name;
-        balance = initialBalance;
-    }
-
-    void deposit(double amount) {
-        balance += amount;
-        cout << "Deposit of $" << amount << " successful. New balance: $" << balance << endl;
-    }
-
-    void withdraw(double amount) {
-        if (balance >= amount) {
-            balance -= amount;
-            cout << "Withdrawal of $" << amount << " successful. New balance: $" << balance << endl;
-        } else {
-            cout << "Insufficient funds. Withdrawal failed." << endl;
-        }
-    }
-
-    double getBalance() const {
-        return balance;
-    }
-
-    void display() const {
-        cout << "Account Number: " << accountNumber << endl;
-        cout << "Account Holder Name: " << accountHolderName << endl;
-        cout << "Balance: $" << balance << endl;
-    }
+	int totalitems;
+	float Qty[3];
+	float price[3];
+	int vatprice[3];
+	int tprice[3];
+	void input();
+	void output();
 };
-
-class Bank {
-private:
-    vector<Account> accounts;
-
+class vat:public head
+{
+	float vats;
 public:
-    void createAccount() {
-        string number, name;
-        double initialBalance;
-
-        cout << "Enter account number: ";
-        cin >> number;
-
-        cout << "Enter account holder name: ";
-        cin.ignore();
-        getline(cin, name);
-
-        cout << "Enter initial balance: $";
-        cin >> initialBalance;
-
-        Account newAccount(number, name, initialBalance);
-        accounts.push_back(newAccount);
-
-        cout << "Account created successfully." << endl;
-    }
-
-    void performTransaction(string accountNumber) {
-        Account* account = findAccount(accountNumber);
-        if (account != nullptr) {
-            int choice;
-            double amount;
-
-            cout << "1. Deposit" << endl;
-            cout << "2. Withdraw" << endl;
-            cout << "Enter your choice: ";
-            cin >> choice;
-
-            switch (choice) {
-                case 1:
-                    cout << "Enter amount to deposit: $";
-                    cin >> amount;
-                    account->deposit(amount);
-                    break;
-                case 2:
-                    cout << "Enter amount to withdraw: $";
-                    cin >> amount;
-                    account->withdraw(amount);
-                    break;
-                default:
-                    cout << "Invalid choice." << endl;
-                    break;
-            }
-        } else {
-            cout << "Account not found." << endl;
-        }
-    }
-
-    void displayAccount(string accountNumber) const {
-        Account* account = findAccount(accountNumber);
-        if (account != nullptr) {
-            account->display();
-        } else {
-            cout << "Account not found." << endl;
-        }
-    }
-
-private:
-    Account* findAccount(string accountNumber) {
-        for (int i = 0; i < accounts.size(); i++) {
-            if (accounts[i].getAccountNumber() == accountNumber) {
-                return &accounts[i];
-            }
-        }
-        return nullptr;
-    }
+	void vatcal();
+	void outputs();
+	void sum();
 };
 
-int main() {
-    Bank bank;
+//******************************************************************
+//	    INPUT FUNCTION
+//******************************************************************
 
-    int choice;
-    string accountNumber;
+void head::input()
+{
+	system("CLS");
+	cout<<"\nEnter number of items= ";
+	cin>>totalitems;
 
-    do {
-        cout << "1. Create Account" << endl;
-        cout << "2. Perform Transaction" << endl;
-        cout << "3. Display Account Details" << endl;
-        cout << "4. Exit" << endl;
-        cout << "Enter your choice: ";
-        cin >> choice;
+	for(int i=0; i<totalitems; i++)
+	{
+		cout<<"\nEnter name of item "<<i+1<<": ";
+		cin>>Iname[i];
+		cout<<"Enter quantity: ";
+		cin>>Qty[i];
+		cout<<"Enter price of item "<<i+1<<": ";
+		cin>>price[i];
+		tprice[i]=Qty[i]*price[i];
+	}
+}
 
-        switch (choice) {
-            case 1:
-                bank.createAccount();
-                break;
-            case 2:
-                cout << "Enter account number: ";
-                cin >> accountNumber;
-                bank.performTransaction(accountNumber);
-                break;
-            case 3:
-                cout << "Enter account number: ";
-                cin >> accountNumber;
-                bank.displayAccount(accountNumber);
-                break;
-            case 4:
-                cout << "Exiting..." << endl;
-                break;
-            default:
-                cout << "Invalid choice." << endl;
-                break;
-        }
+//******************************************************************
+//	   OUTPUT FUNCTION
+//******************************************************************
 
-        cout << endl;
 
-    } while (choice != 4);
 
-    return 0;
+void head::output()
+{
+	int a;
+
+	ifstream infile("COUNT.TXT");
+	infile>>a;
+
+	ofstream outfile("COUNT.TXT");
+	a+=1;
+	outfile<<a;
+	outfile.close();
+
+	{ofstream outfile("HIS.TXT", ios::app);
+	outfile<<endl<<"Bill No.: "<<a<<endl;
+	outfile<<"------------------------------------------------------------------------"<<endl;
+cout<<"\n";
+	cout<<"Name of Item\tQuantity   Price  Total Price\n";
+	for(int i=0;i<totalitems;i++)
+	{
+		outfile<<"Name: "<<Iname[i]<<" Qty: "<<Qty[i]<<" Price: "<<tprice[i]<<endl;
+		cout<<Iname[i]<<"\t\t"<<Qty[i]<<"\t   "<<price[i]<<"\t   "<<tprice[i]<<'\n';
+	}
+
+	outfile<<"------------------------------------------------------------------------"<<endl;
+	outfile.close();
+	}
+}
+
+
+//******************************************************************
+//	   VAT CALCULATION
+//******************************************************************
+
+void vat::vatcal()
+{
+	input();
+	for(int i=0;i<totalitems;i++)
+	{
+		if(price[i]<=100.00)
+		{
+			vatprice[i]=tprice[i]+(0.03*tprice[i]);
+		}
+		else
+		{
+			vatprice[i]=tprice[i]+(0.1*tprice[i]);
+		}
+	}
+}
+//******************************************************************
+//	    VAT OUTPUTS
+//******************************************************************
+
+void vat::outputs()
+{
+	output();
+
+	float cash=0,sum=0,qty=0,sumt=0;
+
+	for(int i=0;i<totalitems;i++)
+	{
+	       sumt+=tprice[i];
+		   sum+=vatprice[i];
+		   qty+=Qty[i];
+	}
+	cout<<"\nTotal:";
+	cout<<"\n------------------------------------------------------------------------------";
+	cout<<"\n\tQuantity= "<<qty<<"\t\t Sum= "<<sumt<<"\tWith Vat:"<<sum;
+	cout<<"\n------------------------------------------------------------------------------";
+
+pay:
+
+	cout<<"\n\n\t\t\t****PAYMENT SUMMARY****\n";
+	cout<<"\n\t\t\tTotal cash given: ";
+	cin>>cash;
+
+	if(cash>=sum)
+		cout<<"\n\t\t\tTotal cash repaid: "<<cash-sum<<'\n';
+		
+	else
+	{	cout<<"\n\t\t\tCash given is less than total amount!!!";
+
+	goto pay;
+	}
+}
+
+
+//******************************************************************
+//	    PROTECTION PASSWORD
+//******************************************************************
+
+int passwords()
+{
+
+	char p1,p2,p3;
+
+	cout<<"\n\n\n\n\n\n\t\t\tENTER THE PASSWORD: ";
+
+	cin>>p1;
+	cout<<"*";
+	cin>>p2;
+	cout<<"*";
+	cin>>p3;
+	cout<<"*";
+
+	if ((p1=='s'||p1=='S')&&(p2=='i'||p2=='I')&&(p3=='d'||p3=='D'))
+
+		return 1;
+
+	else
+		return 0;
+}
+// END of Password.
+
+//****************************************************************
+//    	THE MAIN FUNCTION OF PROGRAM
+//****************************************************************
+
+
+int main()
+{
+	vat obj;
+	char opt, ch;
+	int a=1;
+	ifstream fin;
+
+	a==passwords();
+	if(!a)
+	{
+		for(int i=0;i<2;i++)
+		{
+			cout<<"\nWrong password try once more\n";
+			if(passwords())
+			{
+				goto last;
+			}
+			else
+			{
+				cout<<"\n\n\t\t\t all attempts failed.....";
+				cout<<"\n\n\n\t\t\t see you.................. ";
+				exit(0);
+			}
+
+		}
+		cout<<"\t\t\t sorry all attempts failed............. \n \t\t\tinactive";
+			 }
+	else{
+last:;
+
+
+	 do{
+start:
+	system("PAUSE");
+	system("CLS");
+	cout<<"\n\n\t\t\t------------------------------";
+	cout<<"\n\t\t\tShop Billing Management System";
+	cout<<"\n\t\t\t------------------------------";
+	 cout<<"\n\n\t\t\tWhat you want to do?";
+	 cout<<"\n\t\t\t1.\tTo enter new entry\n\t\t\t2.\tTo view previous entries\n\t\t\t3.\tExit\n";
+	 cout<<"\n\nEnter your option: ";
+	 cin>>opt;
+	 switch(opt)
+	 {
+	 case'1':
+		 obj.vatcal();
+
+		 obj.outputs();
+		 goto start;
+	 case'2':
+
+		 fin.open("HIS.TXT", ios::in);
+		 while(fin.get(ch))
+		 {
+			 cout<<ch;
+		 }
+		 fin.close();
+
+		 goto start;
+	 case'3':
+		 exit(0);
+	 default:
+		 cout<<"\a";
+	 }
+
+	 }while(opt!=3);
+	}
+	return 0;
 }
